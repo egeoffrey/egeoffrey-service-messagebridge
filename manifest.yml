@@ -1,11 +1,8 @@
 package: myhouse-service-messagebridge
-revision: 1
+revision: 2
 version: development
 git: myhouse-project/myhouse-service-messagebridge
 modules:
   - service/messagebridge
-default_config:
-  - service/messagebridge:
-      port_listen: 50140
-      port_send: 50141
+
       
