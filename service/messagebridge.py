@@ -28,6 +28,7 @@ import socket
 import json
 
 from sdk.python.module.service import Service
+from sdk.python.utils.datetimeutils import DateTimeUtils
 from sdk.python.module.helpers.message import Message
 
 import sdk.python.utils.exceptions as exception
@@ -44,6 +45,7 @@ class Messagebridge(Service):
         # helpers
         self.date = None
         # require configuration before starting up
+        self.add_configuration_listener("house", True)
         self.add_configuration_listener(self.fullname, True)
         
     # initialize a sensor when just started or when in an unknown status
@@ -51,10 +53,11 @@ class Messagebridge(Service):
         # turn all the output off
         self.tx(sensor["node_id"], ["OUTA0", "OUTB0", "OUTC0", "OUTD0"], True)
         # put it to sleep
-        self.sleep(sensor)
+        self.sensor_sleep(sensor)
         
     # put a sensor to sleep
-    def sleep(self, sensor):
+    def sensor_sleep(self, sensor):
+        if "cycle_sleep_min" not in sensor: return
         sleep_min = sensor["cycle_sleep_min"]*60
         self.sleep(1)
         self.tx(sensor, "SLEEP"+str(sleep_min).zfill(3)+"S", False)
@@ -95,9 +98,9 @@ class Messagebridge(Service):
                 data = json.loads(data)
                 if data["type"] != "WirelessMessage": continue
                 # check if this node is associated to a registered sensor
-                for sensor_id in self.sensor:
-                    if data["id"] == self.sensor[sensor_id]["node_id"]:
-                        sensor = self.sensor[sensor_id]
+                for sensor_id in self.sensors:
+                    if data["id"] == self.sensors[sensor_id]["node_id"]:
+                        sensor = self.sensors[sensor_id]
                         break
                 # not registered sensor, skip it
                 if sensor is None: continue
@@ -115,11 +118,11 @@ class Messagebridge(Service):
                             self.tx(sensor, queue[data["id"]])
                             self.queue[data["id"]] = []
                         # put it to sleep again
-                        self.sleep(sensor)
+                        self.sensor_sleep(sensor)
                     else:
-                        for sensor_id in self.sensor:
-                            if data["id"] == self.sensor[sensor_id]["node_id"] and content.startswith(self.sensor[sensor_id]["measure"]):
-                                sensor = self.sensor[sensor_id]
+                        for sensor_id in self.sensors:
+                            if data["id"] == self.sensors[sensor_id]["node_id"] and content.startswith(self.sensors[sensor_id]["measure"]):
+                                sensor = self.sensors[sensor_id]
                                 break
                         # not registered measure, skip it
                         if sensor is None: continue
@@ -129,10 +132,10 @@ class Messagebridge(Service):
                         message.command = "IN"
                         message.args = sensor_id
                         # generate the timestamp
-                        date = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
-                        measure.set("timestamp", self.date.timezone(self.date.timezone(int(time.mktime(date.timetuple())))))
+                        date_in = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
+                        message.set("timestamp", self.date.timezone(self.date.timezone(int(time.mktime(date_in.timetuple())))))
                         # strip out the measure from the value
-                        message.set("value", content.replace(self.sensor[sensor_id]["measure"],""))
+                        message.set("value", content.replace(self.sensors[sensor_id]["measure"],""))
                         # send the measure to the controller
                         self.send(message)
             except Exception,e:
