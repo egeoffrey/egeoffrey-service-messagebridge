@@ -2,7 +2,7 @@ package: myhouse-service-messagebridge
 revision: 3
 version: development
 github: myhouse-project/myhouse-service-messagebridge
-dockerhub: myhouse-project/myhouse-service-messagebridge
+dockerhub: myhouseproject/myhouse-service-messagebridge
 container_config:
   network_mode: host
 description: Interact with Ciseco/WirelessThings devices
