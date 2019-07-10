@@ -48,30 +48,16 @@ class Messagebridge(Service):
         self.add_configuration_listener("house", True)
         self.add_configuration_listener(self.fullname, True)
         
-    # initialize a sensor when just started or when in an unknown status
-    def init(self, sensor):
-        # turn all the output off
-        self.tx(sensor["node_id"], ["OUTA0", "OUTB0", "OUTC0", "OUTD0"], True)
-        # put it to sleep
-        self.sensor_sleep(sensor)
-        
-    # put a sensor to sleep
-    def sensor_sleep(self, sensor):
-        if "cycle_sleep_min" not in sensor: return
-        sleep_min = sensor["cycle_sleep_min"]*60
-        self.sleep(1)
-        self.tx(sensor, "SLEEP"+str(sleep_min).zfill(3)+"S", False)
-        
     # transmit a message to a sensor
-    def tx(self, sensor, data, service_message=False):
-        if not module_message: log_info("sending message to "+sensor["node_id"]+": "+str(data))
+    def tx(self, node_id, data, service_message=False):
+        if not module_message: log_info("sending message to "+node_id+": "+str(data))
         # create a socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         # prepare the message
         message = {'type':"WirelessMessage",'network':"Serial"}
-        message["id"] = sensor["node_id"]
+        message["id"] = node_id
         message["data"] = data if isinstance(data,list) else [data]
         json_message = json.dumps(message)
         # send the message
@@ -97,47 +83,38 @@ class Messagebridge(Service):
                 # the message is expected to be in JSON format
                 data = json.loads(data)
                 if data["type"] != "WirelessMessage": continue
-                # check if this node is associated to a registered sensor
-                for sensor_id in self.sensors:
-                    if data["id"] == self.sensors[sensor_id]["node_id"]:
-                        sensor = self.sensors[sensor_id]
-                        break
-                # not registered sensor, skip it
-                if sensor is None: continue
-                # for each message
-                for content in data["data"]:
-                    if content == "STARTED":
-                        self.log_info(data["id"]+" has just started")
-                        # ACK a started message
-                        self.tx(sensor, "ACK", True)
-                        # initialize
-                        self.init(sensor)
-                    elif content == "AWAKE":
-                        # send a message if there is something in the queue
-                        if data["id"] in self.queue and len(self.queue[data["id"]]) > 0:
-                            self.tx(sensor, queue[data["id"]])
-                            self.queue[data["id"]] = []
-                        # put it to sleep again
-                        self.sensor_sleep(sensor)
-                    else:
-                        for sensor_id in self.sensors:
-                            if data["id"] == self.sensors[sensor_id]["node_id"] and content.startswith(self.sensors[sensor_id]["measure"]):
-                                sensor = self.sensors[sensor_id]
-                                break
-                        # not registered measure, skip it
-                        if sensor is None: continue
-                        # prepare the message
-                        message = Message(self)
-                        message.recipient = "controller/hub"
-                        message.command = "IN"
-                        message.args = sensor_id
-                        # generate the timestamp
-                        date_in = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
-                        message.set("timestamp", self.date.timezone(self.date.timezone(int(time.mktime(date_in.timetuple())))))
-                        # strip out the measure from the value
-                        message.set("value", content.replace(self.sensors[sensor_id]["measure"],""))
-                        # send the measure to the controller
-                        self.send(message)
+                # parse content
+                content = data["data"][0]
+                # sensor just started
+                if content == "STARTED":
+                    self.log_info(data["id"]+" has just started")
+                    self.tx(data["id"], "ACK", True)
+                elif content == "AWAKE":
+                    # send a message if there is something in the queue
+                    if data["id"] in self.queue and len(self.queue[data["id"]]) > 0:
+                        self.tx(data["id"], queue[data["id"]])
+                        self.queue[data["id"]] = []
+                else:
+                    # look for the sensor_id associated to this measure
+                    sensor = None
+                    for sensor_id in self.sensors:
+                        if data["id"] == self.sensors[sensor_id]["node_id"] and content.startswith(self.sensors[sensor_id]["measure"]):
+                            sensor = self.sensors[sensor_id]
+                            break
+                    # if not registered, skip it
+                    if sensor is None: continue
+                    # prepare the message
+                    message = Message(self)
+                    message.recipient = "controller/hub"
+                    message.command = "IN"
+                    message.args = sensor_id
+                    # generate the timestamp
+                    date_in = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
+                    message.set("timestamp", self.date.timezone(self.date.timezone(int(time.mktime(date_in.timetuple())))))
+                    # strip out the measure from the value
+                    message.set("value", content.replace(self.sensors[sensor_id]["measure"],""))
+                    # send the measure to the controller
+                    self.send(message)
             except Exception,e:
                 self.log_warning("unable to parse "+str(data)+": "+exception.get(e))
             
@@ -154,7 +131,7 @@ class Messagebridge(Service):
             if not self.is_valid_configuration(["node_id", "measure"], sensor): return
             if "cycle_sleep_min" not in sensor:
                 # send the message directly
-                self.tx(sensor, data)
+                self.tx(sensor["node_id"], data)
             else:
                 # may be sleeping, queue it
                 self.log_info("queuing message for "+sensor["node_id"]+": "+data)
