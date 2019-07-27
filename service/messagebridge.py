@@ -45,8 +45,9 @@ class Messagebridge(Service):
         # helpers
         self.date = None
         # require configuration before starting up
-        self.add_configuration_listener("house", True)
-        self.add_configuration_listener(self.fullname, True)
+        self.config_schema = 1
+        self.add_configuration_listener("house", 1, True)
+        self.add_configuration_listener(self.fullname, "+", True)
         
     # transmit a message to a sensor
     def tx(self, node_id, data, service_message=False):
@@ -68,7 +69,7 @@ class Messagebridge(Service):
     # What to do when running
     def on_start(self):
         # request all sensors' configuration so to filter sensors of interest
-        self.add_configuration_listener("sensors/#")
+        self.add_configuration_listener("sensors/#", 1)
         self.log_debug("listening for UDP datagrams on port "+str(self.config["port_listen"]))
         # bind to the network
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -141,12 +142,14 @@ class Messagebridge(Service):
     # What to do when receiving a new/updated configuration for this module
     def on_configuration(self,message):
         # we need house timezone
-        if message.args == "house":
-            if not self.is_valid_module_configuration(["timezone"], message.get_data()): return False
+        if message.args == "house" and not message.is_null:
+            if not self.is_valid_configuration(["timezone"], message.get_data()): return False
             self.date = DateTimeUtils(message.get("timezone"))
         # module's configuration
-        if message.args == self.fullname:
-            if not self.is_valid_module_configuration(["port_listen", "port_send"], message.get_data()): return False
+        if message.args == self.fullname and not message.is_null:
+            if message.config_schema != self.config_schema: 
+                return False
+            if not self.is_valid_configuration(["port_listen", "port_send"], message.get_data()): return False
             self.config = message.get_data()
         # sensors to register
         elif message.args.startswith("sensors/"):
