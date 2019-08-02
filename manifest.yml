@@ -1,36 +1,38 @@
-manifest_schema: 1
-package: myhouse-service-messagebridge
-revision: 5
-version: development
-github: myhouse-project/myhouse-service-messagebridge
-dockerhub: myhouseproject/myhouse-service-messagebridge
+branch: development
 container_config:
   network_mode: host
 description: Interact with Ciseco/WirelessThings devices
-tags: service ciseco wirelessthings
+dockerhub: myhouseproject/myhouse-service-messagebridge
+github: myhouse-project/myhouse-service-messagebridge
+manifest_schema: 2
 modules:
-  - service/messagebridge:
-      description: Interact with Ciseco/WirelessThings devices
-      service_configuration: 
-        passive:
-          - name: node_id
-            description: The ID of the device
-            format: string
-            placeholder: TA
-            required: true
-          - name: measure
-            description: The measure to take
-            format: string
-            placeholder: TEMP
-            required: true
-        actuator:
-          - name: node_id
-            description: The ID of the device
-            format: string
-            placeholder: TA
-            required: true
-          - name: cycle_sleep_min
-            description: For devices with a Generic IO firmware put it to sleep for additional minutes
-            placeholder: 5
-            required: false
-            format: int
+- service/messagebridge:
+    description: Interact with Ciseco/WirelessThings devices
+    service_configuration:
+      actuator:
+      - description: The ID of the device
+        format: string
+        name: node_id
+        placeholder: TA
+        required: true
+      - description: For devices with a Generic IO firmware put it to sleep for additional
+          minutes
+        format: int
+        name: cycle_sleep_min
+        placeholder: 5
+        required: false
+      passive:
+      - description: The ID of the device
+        format: string
+        name: node_id
+        placeholder: TA
+        required: true
+      - description: The measure to take
+        format: string
+        name: measure
+        placeholder: TEMP
+        required: true
+package: myhouse-service-messagebridge
+revision: 6
+tags: service ciseco wirelessthings
+version: 1.0
