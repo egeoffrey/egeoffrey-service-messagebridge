@@ -4,6 +4,7 @@ container_config:
 description: Interact with Ciseco/WirelessThings devices
 dockerhub: myhouseproject/myhouse-service-messagebridge
 github: myhouse-project/myhouse-service-messagebridge
+icon: microchip
 manifest_schema: 2
 modules:
 - service/messagebridge:
@@ -33,6 +34,6 @@ modules:
         placeholder: TEMP
         required: true
 package: myhouse-service-messagebridge
-revision: 6
+revision: 7
 tags: service ciseco wirelessthings
 version: 1.0
