@@ -2,8 +2,8 @@ branch: development
 container_config:
   network_mode: host
 description: Interact with Ciseco/WirelessThings devices
-dockerhub: myhouseproject/myhouse-service-messagebridge
-github: myhouse-project/myhouse-service-messagebridge
+dockerhub: egeoffrey/egeoffrey-service-messagebridge
+github: egeoffrey/egeoffrey-service-messagebridge
 icon: microchip
 manifest_schema: 2
 modules:
@@ -33,7 +33,7 @@ modules:
         name: measure
         placeholder: TEMP
         required: true
-package: myhouse-service-messagebridge
-revision: 7
+package: egeoffrey-service-messagebridge
+revision: 8
 tags: service ciseco wirelessthings
 version: 1.0
