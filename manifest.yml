@@ -9,6 +9,17 @@ manifest_schema: 2
 modules:
 - service/messagebridge:
     description: Interact with Ciseco/WirelessThings devices
+    module_configuration:
+    - description: The udp port the Messagebridge is broadcasting data to
+      format: int
+      name: port_listen
+      placeholder: 50140
+      required: true
+    - description: The udp port the Messagebridge is listening
+      format: int
+      name: port_send
+      placeholder: 50141
+      required: true
     service_configuration:
       actuator:
       - description: The ID of the device
@@ -34,6 +45,6 @@ modules:
         placeholder: TEMP
         required: true
 package: egeoffrey-service-messagebridge
-revision: 8
+revision: 9
 tags: service ciseco wirelessthings
 version: 1.0
