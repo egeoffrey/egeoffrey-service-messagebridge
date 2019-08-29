@@ -42,11 +42,8 @@ class Messagebridge(Service):
         self.sensors = {}
         # queue messages when the sensor is sleeping
         self.queue = {}
-        # helpers
-        self.date = None
         # require configuration before starting up
         self.config_schema = 1
-        self.add_configuration_listener("house", 1, True)
         self.add_configuration_listener(self.fullname, "+", True)
         
     # transmit a message to a sensor
@@ -111,7 +108,7 @@ class Messagebridge(Service):
                     message.args = sensor_id
                     # generate the timestamp
                     date_in = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
-                    message.set("timestamp", self.date.timezone(self.date.timezone(int(time.mktime(date_in.timetuple())))))
+                    message.set("timestamp", int(time.mktime(date_in.timetuple())))
                     # strip out the measure from the value
                     message.set("value", content.replace(self.sensors[sensor_id]["measure"],""))
                     # send the measure to the controller
@@ -141,10 +138,6 @@ class Messagebridge(Service):
 
     # What to do when receiving a new/updated configuration for this module
     def on_configuration(self,message):
-        # we need house timezone
-        if message.args == "house" and not message.is_null:
-            if not self.is_valid_configuration(["timezone"], message.get_data()): return False
-            self.date = DateTimeUtils(message.get("timezone"))
         # module's configuration
         if message.args == self.fullname and not message.is_null:
             if message.config_schema != self.config_schema: 
