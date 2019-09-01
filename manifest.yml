@@ -33,7 +33,7 @@ modules:
         name: cycle_sleep_min
         placeholder: 5
         required: false
-      passive:
+      push:
       - description: The ID of the device
         format: string
         name: node_id
@@ -45,6 +45,6 @@ modules:
         placeholder: TEMP
         required: true
 package: egeoffrey-service-messagebridge
-revision: 11
+revision: 12
 tags: service ciseco wirelessthings
 version: 1.0
