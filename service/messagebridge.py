@@ -103,8 +103,8 @@ class Messagebridge(Service):
                     message.command = "IN"
                     message.args = sensor_id
                     # generate the timestamp
-                    date_in = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
-                    message.set("timestamp", int(time.mktime(date_in.timetuple())))
+                    # date_in = datetime.datetime.strptime(data["timestamp"],"%d %b %Y %H:%M:%S +0000")
+                    # message.set("timestamp", int(time.mktime(date_in.timetuple())))
                     # strip out the measure from the value
                     message.set("value", content.replace(self.sensors[sensor_id]["measure"],""))
                     # send the measure to the controller
