@@ -1,4 +1,4 @@
-branch: development
+branch: master
 container_config:
   network_mode: host
 description: Interact with Ciseco/WirelessThings devices
@@ -45,6 +45,6 @@ modules:
         placeholder: TEMP
         required: true
 package: egeoffrey-service-messagebridge
-revision: 15
+revision: 16
 tags: service ciseco wirelessthings
 version: 1.0

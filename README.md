@@ -70,4 +70,4 @@ service ciseco wirelessthings
 
 ## Version
 
-The version of this egeoffrey-service-messagebridge is 1.0-15 on the development branch.
+The version of this egeoffrey-service-messagebridge is 1.0-16 on the master branch.
