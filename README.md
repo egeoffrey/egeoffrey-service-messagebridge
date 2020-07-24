@@ -47,7 +47,7 @@ If you are a user willing to contribute to somebody's else package, submit your 
 
 Building is required only if you are the author of the package. To build a Docker image and automatically push it to [Docker Hub](https://hub.docker.com/r/egeoffrey/egeoffrey-service-messagebridge), run the following command from within this package's directory:
 ```
-egeoffrey-cli build egeoffrey-service-messagebridge <amd64|arm>
+egeoffrey-cli build egeoffrey-service-messagebridge
 ```
 To function properly, when running in a Docker container, the following additional configuration settings has to be added to e.g. your docker-compose.yml file (when installing through egeoffrey-cli, this is not needed since done automatically upon installation):
 ```
@@ -70,4 +70,4 @@ service ciseco wirelessthings
 
 ## Version
 
-The version of this egeoffrey-service-messagebridge is 1.0-16 on the master branch.
+The version of this egeoffrey-service-messagebridge is 1.0-17 on the master branch.
