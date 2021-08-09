@@ -45,6 +45,6 @@ modules:
         placeholder: TEMP
         required: true
 package: egeoffrey-service-messagebridge
-revision: 17
+revision: 1
 tags: service ciseco wirelessthings
-version: 1.0
+version: 1.1
